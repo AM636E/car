@@ -1,0 +1,60 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Copy on Raspberry Pi",
+            "type": "shell",
+            "command": "sshpass",
+            "args": [
+                "-p",
+                "sharafin",
+                "ssh", "nazarevic@raspi.local", "'rm -fr smash'",
+                "&&",
+                "sshpass",
+                "-p",
+                "sharafin",
+                "scp",
+                "-r",
+                "${workspaceFolder}/",
+                "nazarevic@raspi.local:~/smash"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Copy and Build on Raspberry Pi",
+            "type": "shell",
+            "command": "sshpass",
+            "args": [
+                "-p",
+                "sharafin",
+                "scp",
+                "-r",
+                "${workspaceFolder}/",
+                "nazarevic@raspi.local:~/smash"
+            ],
+            "dependsOn": ["Run Build Command on Pi"],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Run Build Command on Pi",
+            "type": "shell",
+            "command": "sshpass",
+            "args": [
+                "-p", 
+                "sharafin",
+                "ssh",
+                "nazarevic@raspi.local",
+                 "'cd ~/smash && cmake . && make'"
+            ],"group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        }
+    ]
+}

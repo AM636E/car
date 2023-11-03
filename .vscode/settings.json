@@ -1,0 +1,23 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "joystick.h": "c",
+        "stdbool.h": "c",
+        "stack.h": "c",
+        "type_traits": "c",
+        "stdlib.h": "c",
+        "gpio.h": "c",
+        "cpio.h": "c",
+        "gio.h": "c",
+        "bluetooth.h": "c",
+        "hci.h": "c",
+        "hci_lib.h": "c",
+        "unistd.h": "c"
+    },
+    "includePath": [
+        "${workspaceFolder}/libs"
+    ],
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/libs"
+    ],
+}
