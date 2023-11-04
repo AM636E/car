@@ -11,49 +11,24 @@
 #include "include/gpio.h"
 #include "include/stack.h"
 
-stack *convertRange3(int incomingValue, value_range *lowRange, value_range *highRange)
+int convert_controller_value(int incomingValue, value_range *lowRange, value_range *highRange)
 {
-    stack *result = initialize();
+    int newValue = ((incomingValue - highRange->min) * (lowRange->max - lowRange->min) /
+                    (highRange->max - highRange->min)) + lowRange->min;
 
-    if (result == NULL)
+    printf("gpio_convert_controller_value: newValue %i\n", newValue);
+
+    if (newValue < 40)
     {
-        fprintf(stderr, "Failed to allocate memory");
+        return 0;
     }
 
-    int new_value = ((incomingValue - highRange->min) * (lowRange->max - lowRange->min) /
-                     (highRange->max - highRange->min)) +
-                    lowRange->min;
-
-    printf("new_value %i\n", new_value);
-
-    if (incomingValue <= 100)
-    {
-        int *max = (int *)malloc(sizeof(int));
-        (*max) = 255;
-
-        for (int i = new_value; i < 255; i += 50)
-        {
-            printf("push %i\n", i);
-            int *val = (int *)malloc(sizeof(int));
-            (*val) = i;
-            push(result, val);
-        }
-        push(result, max);
-        push(result, max);
-        push(result, max);
-    }
-
-    if (incomingValue < 40)
-    {
-        push(result, NULL);
-    }
-
-    return result;
+    return newValue;
 }
 
-stack *convertRange(int incomingValue)
+int gpio_convert_controller_value(int incomingValue)
 {
-    printf("convert range: %i\n", incomingValue);
+    printf("gpio_convert_controller_value: %i\n", incomingValue);
     const int old_min = -32767;
     const int old_max = 32767;
     const int new_min = 10;
@@ -68,7 +43,7 @@ stack *convertRange(int incomingValue)
     high.min = old_min;
     high.max = old_max;
 
-    return convertRange3(incomingValue, &low, &high);
+    return convert_controller_value(incomingValue, &low, &high);
 }
 
 void gpio_init_pwm(gpio_error *error)

@@ -507,19 +507,8 @@ static void start_scan(GDBusProxy *adapter)
 
 bool connectBluetoothDevice(char *deviceMacAddress)
 {
-
     start_scan(NULL);
 
-    //     GDBusProxy* adapter = get_adapter();
-    //     if (!adapter) {
-    //         return FALSE; // or handle error appropriately
-    //     }
-    //     fflush(stdout);
-    //     listen_for_devices();
-    // fflush(stdout);
-    //     start_scan(adapter);
-    // fflush(stdout);
-    //     g_object_unref(adapter); // clean up
     return TRUE;
 }
 

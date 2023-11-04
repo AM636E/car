@@ -10,7 +10,7 @@ typedef unsigned char gpio_pwm_value;
 typedef int gpio_pin_num;
 
 #define GPIO_PIN_PWM 18
-#define GPIO_DEFAULT_PWM_FREQUENCY 1000
+#define GPIO_DEFAULT_PWM_FREQUENCY 100
 
 #define GPIO_ERROR_INIT 1
 
@@ -20,7 +20,7 @@ typedef struct
     short max;
 } value_range;
 
-stack *convertRange(int controllerValue);
+int gpio_convert_controller_value(int controllerValue);
 
 void gpio_init_pwm(gpio_error *error);
 

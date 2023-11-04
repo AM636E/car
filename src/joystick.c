@@ -34,6 +34,8 @@ void start_joystick_loop(on_joystick_event handler, joystick_error *error)
         joystick_event event;
         event.btnType = joyEvent.number;
         event.value = joyEvent.value;
+        printf("calling handler\n");
         handler(&event);
+        printf("end calling handler\n");
     }
 }

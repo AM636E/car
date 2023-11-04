@@ -12,6 +12,9 @@
 #include "include/gpio.h"
 #include "include/bluetooth.h"
 #include "include/joystick.h"
+#include "include/motor.h"
+
+static motor *pMotor;
 
 void handle_joystick_event(joystick_event *event)
 {
@@ -19,31 +22,14 @@ void handle_joystick_event(joystick_event *event)
 
         if (event->btnType == JOYSTICK_BTN_RT)
         {
-                stack *current_duty_cycle = convertRange(event->value);
-
-                if (current_duty_cycle == NULL)
+                if (pMotor->starting)
                 {
-                        gpio_write_pwm(0);
-                        printf("null\n");
                         return;
                 }
 
-                while (!is_empty(current_duty_cycle))
-                {
-                        pop_result result = pop(current_duty_cycle);
-                        int *value = result.data;
-                        if (value == NULL)
-                        {
-                                printf("0\n");
-                                continue;
-                        }
-                        printf("POWER %i]\n", *value);
-                        gpio_write_pwm(*value);
-                        
-                        usleep(1000);
-                }
+                int currentPower = gpio_convert_controller_value(event->value);
 
-                deinitialize(current_duty_cycle);
+                motor_set_power(pMotor, currentPower);
         }
 }
 
@@ -52,12 +38,11 @@ int main()
         printf("Starting.\n");
         fflush(stdout);
 
-        gpio_error gpioError;
-        gpio_init_pwm(&gpioError);
+        pMotor = motor_init();
 
-        if (gpioError == GPIO_ERROR_INIT)
+        if (pMotor == NULL)
         {
-                printf("gpio init error.");
+                printf("failed to init motor");
                 exit(1);
         }
 
@@ -69,10 +54,12 @@ int main()
                 switch (error)
                 {
                 case JOYSTICK_ERROR_NO_DEVICE:
+                        printf("connecting bluetooth device");
                         findAndConnectBluetooth(NULL);
                         break;
 
                 default:
+                        printf("unhandled error: %i", error);
                         break;
                 }
                 sleep(1);
