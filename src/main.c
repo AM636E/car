@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "../libs/pigpio.h"
 #include <stdbool.h>
 #include <linux/joystick.h>
 #include <fcntl.h>
@@ -7,12 +6,21 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include "../libs/pigpio.h"
 #include "include/stack.h"
 #include "include/gpio.h"
 #include "include/bluetooth.h"
 #include "include/joystick.h"
 #include "include/motor.h"
+
+#define MOTOR_MIN_POWER_INPUT 40
+#define MOTOR_MIN_POWER_VALUE 50
+#define MOTOR_MAX_POWER_VALUE 255
+#define MOTOR_INERTIA_THESHOLD 190
+#define MOTOR_PIN_FORWARD 23
+#define MOTOR_PIN_BACKWARD 24
 
 static motor *pMotor;
 
@@ -20,25 +28,104 @@ void handle_joystick_event(joystick_event *event)
 {
         printf("handle_event: type: %i; value: %i\n", event->btnType, event->value);
 
-        if (event->btnType == JOYSTICK_BTN_RT)
+        switch (event->btnType)
+        {
+        case JOYSTICK_BTN_RT:
         {
                 if (pMotor->starting)
                 {
                         return;
                 }
-
+                motor_set_direction(pMotor, DIRECTION_FORWARD);
                 int currentPower = gpio_convert_controller_value(event->value);
 
                 motor_set_power(pMotor, currentPower);
+
+                break;
+        }
+        case JOYSTICK_BTN_LT:
+        {
+                if (pMotor->starting)
+                {
+                        return;
+                }
+                motor_set_direction(pMotor, DIRECTION_BACKWARD);
+                int currentPower = gpio_convert_controller_value(event->value);
+
+                motor_set_power(pMotor, currentPower);
+                break;
+        }
+        default:
+                break;
         }
 }
 
-int main()
+motor_options *get_default_options()
 {
-        printf("Starting.\n");
+        motor_options *options = (motor_options *)malloc(sizeof(motor_options));
+        options->inertiaTreshold = MOTOR_INERTIA_THESHOLD;
+        options->minPowerInput = MOTOR_MIN_POWER_INPUT;
+        options->minPowerValue = MOTOR_MIN_POWER_VALUE;
+        options->maxPowerInput = MOTOR_MAX_POWER_VALUE;
+        options->pwmFrequency = GPIO_DEFAULT_PWM_FREQUENCY;
+        options->forwardSignalPin = MOTOR_PIN_FORWARD;
+        options->backwardSignalPin = MOTOR_PIN_BACKWARD;
+
+        return options;
+}
+
+motor_options *get_options(int argc, char **argv)
+{
+        motor_options *options = (motor_options *)malloc(sizeof(motor_options));
+        options->inertiaTreshold = MOTOR_INERTIA_THESHOLD;
+        options->minPowerInput = MOTOR_MIN_POWER_INPUT;
+        options->minPowerValue = MOTOR_MIN_POWER_VALUE;
+        options->maxPowerInput = MOTOR_MAX_POWER_VALUE;
+        options->pwmFrequency = GPIO_DEFAULT_PWM_FREQUENCY;
+        options->forwardSignalPin = MOTOR_PIN_FORWARD;
+        options->backwardSignalPin = MOTOR_PIN_BACKWARD;
+
+        return options;
+}
+
+int main(int argc, char *argv[])
+{
+        printf("Starting. argc: %i\n", argc);
         fflush(stdout);
 
-        pMotor = motor_init();
+        motor_options *options = get_default_options();
+
+        for (int i = 0; i < argc; i++)
+        {
+                printf((argv[i]));
+                if (strcmp(argv[i], "-f" )== 0)
+                {
+                        printf((argv[i]));
+                        options->pwmFrequency = atoi(argv[i + 1]);
+                }
+
+                if (strcmp(argv[i], "-t") == 0)
+                {
+                        options->inertiaTreshold = atoi(argv[i + 1]);
+                }
+
+                if (strcmp(argv[i], "-imin" )== 0)
+                {
+                        options->minPowerInput = atoi(argv[i + 1]);
+                }
+
+                if (strcmp(argv[i], "-pmax" )== 0)
+                {
+                        options->maxPowerInput = atoi(argv[i + 1]);
+                }
+
+                if (strcmp(argv[i], "-pmin" )== 0)
+                {
+                        options->minPowerValue = atoi(argv[i + 1]);
+                }
+        }
+
+        pMotor = motor_init(options);
 
         if (pMotor == NULL)
         {
@@ -59,7 +146,7 @@ int main()
                         break;
 
                 default:
-                        printf("unhandled error: %i", error);
+                        printf("unhandled error: %i\n", error);
                         break;
                 }
                 sleep(1);

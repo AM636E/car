@@ -2,20 +2,17 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "../libs/pigpio.h"
+
 #include "include/gpio.h"
 #include "include/motor.h"
 
-#define MOTOR_MIN_POWER_INPUT 40
-#define MOTOR_MIN_POWER_VALUE 80
-#define MOTOR_MAX_POWER_VALUE 255
-#define MOTOR_INERTIA_THESHOLD 190
-
-motor *motor_init()
+motor *motor_init(motor_options *options)
 {
     printf("motor init\n");
 
     gpio_error gpioError;
-    gpio_init_pwm(&gpioError);
+    gpio_init_pwm(options->pwmFrequency, &gpioError);
 
     if (gpioError == GPIO_ERROR_INIT)
     {
@@ -27,8 +24,34 @@ motor *motor_init()
     result->currentPower = result->prevPower = 0;
     result->direction = DIRECTION_FORWARD;
     result->started = result->starting = false;
+    result->options = options;
+
+    motor_set_direction(result, DIRECTION_FORWARD);
+
+    printf("motor options: F: %i; \n", options->pwmFrequency);
 
     return result;
+}
+
+void motor_set_direction(motor *incoming, motor_direction direction)
+{
+    switch (direction)
+    {
+    case DIRECTION_FORWARD:
+    {
+        gpio_write(incoming->options->forwardSignalPin, HIGH);
+        gpio_write(incoming->options->backwardSignalPin, LOW);
+        break;
+    }
+    case DIRECTION_BACKWARD:
+    {
+        gpio_write(incoming->options->forwardSignalPin, LOW);
+        gpio_write(incoming->options->backwardSignalPin, HIGH);
+        break;
+    }
+    }
+
+    incoming->direction = direction;
 }
 
 void motor_set_power(motor *incoming, int power)
@@ -41,9 +64,9 @@ void motor_set_power(motor *incoming, int power)
 
     printf("set power: %i. started: %i\n", power, incoming->started);
 
-    if (power > MOTOR_MIN_POWER_INPUT && power <= MOTOR_MIN_POWER_VALUE)
+    if (power > incoming->options->minPowerInput && power <= incoming->options->minPowerValue)
     {
-        power = MOTOR_MIN_POWER_VALUE;
+        power = incoming->options->minPowerValue;
     }
 
     if (incoming->starting)
@@ -52,7 +75,7 @@ void motor_set_power(motor *incoming, int power)
         return;
     }
 
-    if (power < MOTOR_MIN_POWER_VALUE)
+    if (power < incoming->options->minPowerValue)
     {
         gpio_write_pwm(0);
         incoming->started = false;
@@ -60,11 +83,11 @@ void motor_set_power(motor *incoming, int power)
         return;
     }
 
-    if (power < MOTOR_INERTIA_THESHOLD && !incoming->started)
+    if (power < incoming->options->inertiaTreshold && !incoming->started)
     {
         incoming->starting = true;
         printf("starting the motor:\n");
-        for (int i = MOTOR_MAX_POWER_VALUE; i >= power; i -= 50)
+        for (int i = incoming->options->inertiaTreshold; i >= power; i -= 50)
         {
             printf("starting the motor: %i ->[%i]\n", i, power);
             gpio_write_pwm(i);

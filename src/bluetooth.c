@@ -313,8 +313,9 @@ void connect_device(DBusConnection *connection, const char *deviceObjectPath, DB
 
 bool signal_handler(DBusConnection *connection, DBusMessage *message)
 {
-    printf("signal_handler %i", message);
+    printf("signal_handler %i\n", message);
     fflush(stdout);
+    stack *result = NULL;
     if (dbus_message_is_signal(message, "org.freedesktop.DBus.ObjectManager", "InterfacesAdded"))
     {
         printf("InterfacesAdded Signal Received\n");
@@ -327,7 +328,7 @@ bool signal_handler(DBusConnection *connection, DBusMessage *message)
         }
         else
         {
-            printf("interface added");
+            printf("interface added\n");
             fflush(stdout);
 
             DBusMessageIter args;
@@ -340,71 +341,89 @@ bool signal_handler(DBusConnection *connection, DBusMessage *message)
             printf("init iterator.\n");
             fflush(stdout);
 
-            stack *result = get_dictionary_values(&args);
-
-            printf("got stack %i.\n", result->length);
-            while (!is_empty(result))
-            {
-                printf("pop\n");
-                pop_result popResult = pop(result);
-
-                if (popResult.error)
-                {
-                    printf("error pop %s\n", popResult.error);
-                }
-                else
-                {
-                    printf("convert value\n");
-                    key_value_pair *entry = (key_value_pair *)popResult.data;
-
-                    printf("[key: %s|v: %s]\n", entry->key, entry->value);
-                    if (strcmp(OBJECT_PATH_KEY, entry->key) == 0)
-                    {
-                        printf("Found object path %s. Connecting...\n", entry->value);
-
-                        if (strstr(entry->value, "14_CB_65_88_01_FF") == NULL)
-                        {
-                            printf("skip...\n");
-                            continue;
-                        }
-
-                        DBusError connectError;
-                        dbus_bool_t errorSet;
-                        do
-                        {
-                            dbus_error_init(&connectError);
-                            connect_device(connection, entry->value, &connectError);
-                            errorSet = dbus_error_is_set(&connectError);
-                            if (errorSet)
-                            {
-                                errorSet = TRUE;
-                                fprintf(stderr, "connection error: %s\n", connectError.message);
-                                dbus_error_free(&connectError);
-                            }
-                            else
-                            {
-                                errorSet = FALSE;
-                                printf("connected. %s\n", entry->value);
-                                dbus_error_free(&connectError);
-                                return TRUE;
-                            }
-                            sleep(1);
-                        } while (errorSet);
-                    }
-
-                    if (entry != NULL)
-                    {
-                        printf("free()\n");
-                        free(entry);
-                    }
-                }
-            }
-
-            deinitialize(result);
+            result = get_dictionary_values(&args);
         }
     }
     else if (dbus_message_is_signal(message, "org.freedesktop.DBus.Properties", "PropertiesChanged"))
     {
+        printf("properties changed\n");
+        fflush(stdout);
+
+        DBusMessageIter args;
+        if (dbus_message_iter_init(message, &args) == FALSE)
+        {
+            printf("failed to init iterator");
+            fflush(stdout);
+            return;
+        }
+        printf("init iterator.\n");
+        fflush(stdout);
+
+        result = get_dictionary_values(&args);
+    }
+
+    if (result != NULL)
+    {
+        printf("got stack %i.\n", result->length);
+        while (!is_empty(result))
+        {
+            printf("pop\n");
+            pop_result popResult = pop(result);
+
+            if (popResult.error)
+            {
+                printf("error pop %s\n", popResult.error);
+            }
+            else
+            {
+                printf("convert value\n");
+                key_value_pair *entry = (key_value_pair *)popResult.data;
+
+                printf("[key: %s|v: %s]\n", entry->key, entry->value);
+                if (strcmp(OBJECT_PATH_KEY, entry->key) == 0)
+                {
+                    printf("Found object path %s. Connecting...\n", entry->value);
+
+                    if (strstr(entry->value, "14_CB_65_88_01_FF") == NULL)
+                    {
+                        printf("skip...\n");
+                        continue;
+                    }
+
+                    DBusError connectError;
+                    dbus_bool_t errorSet;
+                    do
+                    {
+                        dbus_error_init(&connectError);
+                        connect_device(connection, entry->value, &connectError);
+                        errorSet = dbus_error_is_set(&connectError);
+                        if (errorSet)
+                        {
+                            errorSet = TRUE;
+                            fprintf(stderr, "connection error: %s\n", connectError.message);
+                            dbus_error_free(&connectError);
+                        }
+                        else
+                        {
+                            errorSet = FALSE;
+                            printf("connected. %s\n", entry->value);
+                            dbus_error_free(&connectError);
+                            deinitialize(result);
+                            return TRUE;
+                        }
+                        sleep(1);
+                    } while (errorSet);
+                }
+
+                if (entry != NULL)
+                {
+                    printf("free()\n");
+                    free(entry);
+                }
+            }
+        }
+
+        deinitialize(result);
     }
 
     return FALSE;
@@ -457,7 +476,7 @@ static void start_scan(GDBusProxy *adapter)
         printf("Discovery...\n");
         fflush(stdout);
         int tries = 0;
-        while (++tries < 10)
+        while (!connected && ++tries < 10)
         {
             // Dispatch messages
             while (dbus_connection_dispatch(connection) == DBUS_DISPATCH_DATA_REMAINS)

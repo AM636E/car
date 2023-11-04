@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../libs/pigpio.h"
+#include <pigpio.h>
 #include <stdbool.h>
 #include <linux/joystick.h>
 #include <fcntl.h>
@@ -17,11 +17,6 @@ int convert_controller_value(int incomingValue, value_range *lowRange, value_ran
                     (highRange->max - highRange->min)) + lowRange->min;
 
     printf("gpio_convert_controller_value: newValue %i\n", newValue);
-
-    if (newValue < 40)
-    {
-        return 0;
-    }
 
     return newValue;
 }
@@ -46,7 +41,7 @@ int gpio_convert_controller_value(int incomingValue)
     return convert_controller_value(incomingValue, &low, &high);
 }
 
-void gpio_init_pwm(gpio_error *error)
+void gpio_init_pwm(int frequency, gpio_error *error)
 {
     if (gpioInitialise() < 0)
     {
@@ -55,10 +50,16 @@ void gpio_init_pwm(gpio_error *error)
         return;
     }
 
-    gpioSetPWMfrequency(GPIO_PIN_PWM, GPIO_DEFAULT_PWM_FREQUENCY);
+    gpioSetPWMfrequency(GPIO_PIN_PWM, frequency);
 }
 
 void gpio_write_pwm(gpio_pwm_value value)
 {
     gpioPWM(GPIO_PIN_PWM, value);
+}
+
+void gpio_write(int pin, gpio_val value)
+{
+    gpioSetMode(pin, PI_OUTPUT);
+    gpioWrite(pin, value);
 }

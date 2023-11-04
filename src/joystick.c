@@ -17,25 +17,23 @@ void start_joystick_loop(on_joystick_event handler, joystick_error *error)
     if (joyFd == -1)
     {
         perror("no joystick\n");
-        return JOYSTICK_ERROR_NO_DEVICE;
+        *error = JOYSTICK_ERROR_NO_DEVICE;
+        return;
     }
     struct js_event joyEvent;
 
     while (1)
     {
-        printf("reading joystick...\n");
         if (read(joyFd, &joyEvent, sizeof(struct js_event)) == -1)
         {
             perror("cant read joystick\n");
-            return JOYSTICK_ERROR_CANT_READ;
+            *error = JOYSTICK_ERROR_CANT_READ;
+            return;
         }
 
-        printf("joystick: n:%i; v:%i...\n", joyEvent.number, joyEvent.value);
         joystick_event event;
         event.btnType = joyEvent.number;
         event.value = joyEvent.value;
-        printf("calling handler\n");
         handler(&event);
-        printf("end calling handler\n");
     }
 }
