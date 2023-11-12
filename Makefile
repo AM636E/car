@@ -153,6 +153,30 @@ src/bluetooth.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/smash.dir/build.make CMakeFiles/smash.dir/src/bluetooth.c.s
 .PHONY : src/bluetooth.c.s
 
+src/car.o: src/car.c.o
+.PHONY : src/car.o
+
+# target to build an object file
+src/car.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smash.dir/build.make CMakeFiles/smash.dir/src/car.c.o
+.PHONY : src/car.c.o
+
+src/car.i: src/car.c.i
+.PHONY : src/car.i
+
+# target to preprocess a source file
+src/car.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smash.dir/build.make CMakeFiles/smash.dir/src/car.c.i
+.PHONY : src/car.c.i
+
+src/car.s: src/car.c.s
+.PHONY : src/car.s
+
+# target to generate assembly for a file
+src/car.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smash.dir/build.make CMakeFiles/smash.dir/src/car.c.s
+.PHONY : src/car.c.s
+
 src/gpio.o: src/gpio.c.o
 .PHONY : src/gpio.o
 
@@ -177,6 +201,30 @@ src/gpio.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/smash.dir/build.make CMakeFiles/smash.dir/src/gpio.c.s
 .PHONY : src/gpio.c.s
 
+src/joystick.o: src/joystick.c.o
+.PHONY : src/joystick.o
+
+# target to build an object file
+src/joystick.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smash.dir/build.make CMakeFiles/smash.dir/src/joystick.c.o
+.PHONY : src/joystick.c.o
+
+src/joystick.i: src/joystick.c.i
+.PHONY : src/joystick.i
+
+# target to preprocess a source file
+src/joystick.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smash.dir/build.make CMakeFiles/smash.dir/src/joystick.c.i
+.PHONY : src/joystick.c.i
+
+src/joystick.s: src/joystick.c.s
+.PHONY : src/joystick.s
+
+# target to generate assembly for a file
+src/joystick.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smash.dir/build.make CMakeFiles/smash.dir/src/joystick.c.s
+.PHONY : src/joystick.c.s
+
 src/main.o: src/main.c.o
 .PHONY : src/main.o
 
@@ -200,6 +248,30 @@ src/main.s: src/main.c.s
 src/main.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/smash.dir/build.make CMakeFiles/smash.dir/src/main.c.s
 .PHONY : src/main.c.s
+
+src/motor.o: src/motor.c.o
+.PHONY : src/motor.o
+
+# target to build an object file
+src/motor.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smash.dir/build.make CMakeFiles/smash.dir/src/motor.c.o
+.PHONY : src/motor.c.o
+
+src/motor.i: src/motor.c.i
+.PHONY : src/motor.i
+
+# target to preprocess a source file
+src/motor.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smash.dir/build.make CMakeFiles/smash.dir/src/motor.c.i
+.PHONY : src/motor.c.i
+
+src/motor.s: src/motor.c.s
+.PHONY : src/motor.s
+
+# target to generate assembly for a file
+src/motor.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smash.dir/build.make CMakeFiles/smash.dir/src/motor.c.s
+.PHONY : src/motor.c.s
 
 src/stack.o: src/stack.c.o
 .PHONY : src/stack.o
@@ -237,12 +309,21 @@ help:
 	@echo "... src/bluetooth.o"
 	@echo "... src/bluetooth.i"
 	@echo "... src/bluetooth.s"
+	@echo "... src/car.o"
+	@echo "... src/car.i"
+	@echo "... src/car.s"
 	@echo "... src/gpio.o"
 	@echo "... src/gpio.i"
 	@echo "... src/gpio.s"
+	@echo "... src/joystick.o"
+	@echo "... src/joystick.i"
+	@echo "... src/joystick.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/motor.o"
+	@echo "... src/motor.i"
+	@echo "... src/motor.s"
 	@echo "... src/stack.o"
 	@echo "... src/stack.i"
 	@echo "... src/stack.s"

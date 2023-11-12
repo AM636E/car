@@ -11,10 +11,18 @@
 #include "include/gpio.h"
 #include "include/stack.h"
 
-int convert_controller_value(int incomingValue, value_range *lowRange, value_range *highRange)
+static bool gpioInitCalled = false;
+
+void gpio_servo(int pin, int value)
+{
+    gpioServo(pin, value);
+}
+
+int gpio_convert_controller_value3(int incomingValue, value_range *lowRange, value_range *highRange)
 {
     int newValue = ((incomingValue - highRange->min) * (lowRange->max - lowRange->min) /
-                    (highRange->max - highRange->min)) + lowRange->min;
+                    (highRange->max - highRange->min)) +
+                   lowRange->min;
 
     printf("gpio_convert_controller_value: newValue %i\n", newValue);
 
@@ -38,24 +46,44 @@ int gpio_convert_controller_value(int incomingValue)
     high.min = old_min;
     high.max = old_max;
 
-    return convert_controller_value(incomingValue, &low, &high);
+    return gpio_convert_controller_value3(incomingValue, &low, &high);
+}
+
+void gpio_init_pwm_pin(int pin, int frequency, gpio_error *error)
+{
+    printf("gpio init pin %i F:%i\n", pin, frequency);
+    fflush(stdout);
+    if (gpioInitCalled == false)
+    {
+        printf("gpio init\n"); fflush(stdout);
+        if (gpioInitialise() < 0)
+        {
+            fprintf(stderr, "Failed to initialize GPIO\n");
+            *error = GPIO_ERROR_INIT;
+            return;
+        }
+
+        gpioInitCalled = true;
+    }
+
+    gpioSetPWMfrequency(pin, frequency);
 }
 
 void gpio_init_pwm(int frequency, gpio_error *error)
 {
-    if (gpioInitialise() < 0)
-    {
-        fprintf(stderr, "Failed to initialize GPIO\n");
-        *error = GPIO_ERROR_INIT;
-        return;
-    }
-
-    gpioSetPWMfrequency(GPIO_PIN_PWM, frequency);
+    gpio_init_pwm_pin(GPIO_PIN_PWM, frequency, error);
 }
 
 void gpio_write_pwm(gpio_pwm_value value)
 {
-    gpioPWM(GPIO_PIN_PWM, value);
+    gpio_write_pwm_pin(GPIO_PIN_PWM, value);
+}
+
+void gpio_write_pwm_pin(int pin, gpio_pwm_value value)
+{
+    printf("gpio write pwm p:%i v:%i\n", pin, value);
+
+    gpioPWM(pin, value);
 }
 
 void gpio_write(int pin, gpio_val value)

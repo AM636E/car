@@ -26,11 +26,20 @@ typedef struct
     short max;
 } value_range;
 
+
+void gpio_servo(int pin, int value);
+
+int gpio_convert_controller_value3(int incomingValue, value_range *lowRange, value_range *highRange);
+
 int gpio_convert_controller_value(int controllerValue);
 
 void gpio_init_pwm(int frequency, gpio_error *error);
 
+void gpio_init_pwm_pin(int pin, int frequency, gpio_error *error);
+
 void gpio_write_pwm(gpio_pwm_value value);
+
+void gpio_write_pwm_pin(int pin, gpio_pwm_value value);
 
 void gpio_write(int pin, gpio_val value);
 

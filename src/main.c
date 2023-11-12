@@ -14,6 +14,7 @@
 #include "include/bluetooth.h"
 #include "include/joystick.h"
 #include "include/motor.h"
+#include "include/car.h"
 
 #define MOTOR_MIN_POWER_INPUT 40
 #define MOTOR_MIN_POWER_VALUE 50
@@ -22,7 +23,7 @@
 #define MOTOR_PIN_FORWARD 23
 #define MOTOR_PIN_BACKWARD 24
 
-static motor *pMotor;
+static car *pCar;
 
 void handle_joystick_event(joystick_event *event)
 {
@@ -30,29 +31,34 @@ void handle_joystick_event(joystick_event *event)
 
         switch (event->btnType)
         {
+        case JOYSTICK_TIT_V1:
+        {
+                car_turn(pCar, event->value);
+                break;
+        }
         case JOYSTICK_BTN_RT:
         {
-                if (pMotor->starting)
+                if (pCar->carMotor->starting)
                 {
                         return;
                 }
-                motor_set_direction(pMotor, DIRECTION_FORWARD);
+                motor_set_direction(pCar->carMotor, DIRECTION_FORWARD);
                 int currentPower = gpio_convert_controller_value(event->value);
 
-                motor_set_power(pMotor, currentPower);
+                motor_set_power(pCar->carMotor, currentPower);
 
                 break;
         }
         case JOYSTICK_BTN_LT:
         {
-                if (pMotor->starting)
+                if (pCar->carMotor->starting)
                 {
                         return;
                 }
-                motor_set_direction(pMotor, DIRECTION_BACKWARD);
+                motor_set_direction(pCar->carMotor, DIRECTION_BACKWARD);
                 int currentPower = gpio_convert_controller_value(event->value);
 
-                motor_set_power(pMotor, currentPower);
+                motor_set_power(pCar->carMotor, currentPower);
                 break;
         }
         default:
@@ -98,7 +104,7 @@ int main(int argc, char *argv[])
         for (int i = 0; i < argc; i++)
         {
                 printf((argv[i]));
-                if (strcmp(argv[i], "-f" )== 0)
+                if (strcmp(argv[i], "-f") == 0)
                 {
                         printf((argv[i]));
                         options->pwmFrequency = atoi(argv[i + 1]);
@@ -109,29 +115,50 @@ int main(int argc, char *argv[])
                         options->inertiaTreshold = atoi(argv[i + 1]);
                 }
 
-                if (strcmp(argv[i], "-imin" )== 0)
+                if (strcmp(argv[i], "-imin") == 0)
                 {
                         options->minPowerInput = atoi(argv[i + 1]);
                 }
 
-                if (strcmp(argv[i], "-pmax" )== 0)
+                if (strcmp(argv[i], "-pmax") == 0)
                 {
                         options->maxPowerInput = atoi(argv[i + 1]);
                 }
 
-                if (strcmp(argv[i], "-pmin" )== 0)
+                if (strcmp(argv[i], "-pmin") == 0)
                 {
                         options->minPowerValue = atoi(argv[i + 1]);
                 }
         }
 
-        pMotor = motor_init(options);
+        pCar = car_init(options);
 
-        if (pMotor == NULL)
+        if (pCar == NULL)
         {
-                printf("failed to init motor");
+                fprintf(stderr, "failed to init car");
                 exit(1);
         }
+
+        // car_turn_raw(pCar, 1500);
+        // sleep(1);
+
+        // car_turn_raw(pCar, 1000);
+        // sleep(1);
+        
+        // car_turn_raw(pCar, 2500);
+        // sleep(1);
+        
+        // car_turn_raw(pCar, 2000);
+        // sleep(1);
+        
+        // car_turn_raw(pCar, 500);
+        // sleep(1);
+
+        // car_turn_raw(pCar, 2000);
+        // sleep(5);
+        
+        // car_turn_raw(pCar, 2500);
+        // sleep(5);
 
         joystick_error error;
         while (1)
@@ -141,7 +168,7 @@ int main(int argc, char *argv[])
                 switch (error)
                 {
                 case JOYSTICK_ERROR_NO_DEVICE:
-                        printf("connecting bluetooth device");
+                        fprintf(stderr, "connecting bluetooth device");
                         findAndConnectBluetooth(NULL);
                         break;
 

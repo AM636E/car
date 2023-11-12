@@ -14,7 +14,9 @@
         "hci_lib.h": "c",
         "unistd.h": "c",
         "math.h": "c",
-        "pigpio.h": "c"
+        "pigpio.h": "c",
+        "car.h": "c",
+        "motor.h": "c"
     },
     "includePath": [
         "${workspaceFolder}/libs"
