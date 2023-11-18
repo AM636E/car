@@ -10,8 +10,18 @@
 
 #include "include/gpio.h"
 #include "include/stack.h"
+#include "include/joystick.h"
 
 static bool gpioInitCalled = false;
+
+value_range *value_range_init(int min, int max) 
+{
+    value_range *result = (value_range *)malloc(sizeof(value_range));
+    result->min = min;
+    result->max = max;
+
+    return result;
+}
 
 void gpio_servo(int pin, int value)
 {
@@ -32,8 +42,8 @@ int gpio_convert_controller_value3(int incomingValue, value_range *lowRange, val
 int gpio_convert_controller_value(int incomingValue)
 {
     printf("gpio_convert_controller_value: %i\n", incomingValue);
-    const int old_min = -32767;
-    const int old_max = 32767;
+    const int old_min = JOYSTICK_INPUT_MIN;
+    const int old_max = JOYSTICK_INPUT_MAX;
     const int new_min = 10;
     const int new_max = 255;
 

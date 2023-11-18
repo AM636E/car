@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
         fflush(stdout);
 
         motor_options *options = get_default_options();
+        value_range *steeringRange = value_range_init(800, 2000);
 
         for (int i = 0; i < argc; i++)
         {
@@ -129,9 +130,19 @@ int main(int argc, char *argv[])
                 {
                         options->minPowerValue = atoi(argv[i + 1]);
                 }
+                
+                if (strcmp(argv[i], "-smin") == 0)
+                {
+                        steeringRange->min = atoi(argv[i + 1]);
+                }
+                
+                if (strcmp(argv[i], "-smax") == 0)
+                {
+                        steeringRange->max = atoi(argv[i + 1]);
+                }
         }
 
-        pCar = car_init(options);
+        pCar = car_init(options, steeringRange);
 
         if (pCar == NULL)
         {
@@ -178,6 +189,8 @@ int main(int argc, char *argv[])
                 }
                 sleep(1);
         }
+
+        free(pCar);
 }
 
 /*

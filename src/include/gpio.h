@@ -22,10 +22,11 @@ typedef bool gpio_val;
 
 typedef struct
 {
-    short min;
-    short max;
+    int min;
+    int max;
 } value_range;
 
+value_range *value_range_init(int min, int max);
 
 void gpio_servo(int pin, int value);
 

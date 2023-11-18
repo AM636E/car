@@ -5,8 +5,8 @@
 
 typedef bool motor_direction;
 
-#define DIRECTION_FORWARD true
-#define DIRECTION_BACKWARD false
+#define DIRECTION_FORWARD false
+#define DIRECTION_BACKWARD true
 
 typedef struct motor_options {
     int pwmFrequency;

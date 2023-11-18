@@ -4,8 +4,9 @@
 #include "include/motor.h"
 #include "include/car.h"
 #include "include/gpio.h"
+#include "include/joystick.h"
 
-car *car_init(motor_options *options)
+car *car_init(motor_options *options, value_range *steeringRange)
 {
     printf("car_init\n");
     gpio_error gpioError;
@@ -22,7 +23,8 @@ car *car_init(motor_options *options)
     car *result = (car *)malloc(sizeof(car));
     result->carMotor = motor;
     result->steeringPosition = 0;
-
+    result->steeringServoRange = steeringRange;
+    
     return result;
 }
 
@@ -33,21 +35,15 @@ void car_turn_raw(car *incoming, int incomingValue)
 
 void car_turn(car *incoming, int incomingValue)
 {
-    const int old_min = -32767;
-    const int old_max = 32767;
-    const int new_min = 800;
-    const int new_max = 2200;
+    const int old_min = JOYSTICK_INPUT_MIN;
+    const int old_max = JOYSTICK_INPUT_MAX;
 
-    value_range low;
     value_range high;
-
-    low.min = new_min;
-    low.max = new_max;
 
     high.min = old_min;
     high.max = old_max;
 
-    int gpioValue = gpio_convert_controller_value3(incomingValue, &low, &high);
+    int gpioValue = gpio_convert_controller_value3(-incomingValue, incoming->steeringServoRange, &high);
 
     printf("convert steering value: %i. Result: [%i]\n", incomingValue, gpioValue);
 
