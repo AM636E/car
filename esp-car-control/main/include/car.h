@@ -33,6 +33,7 @@ typedef struct {
 
 typedef struct {
     mcpwm_cmpr_handle_t speed_comparator;
+    mcpwm_cmpr_handle_t steering_comparator;
 } motor_internals;
 
 typedef struct motor_t {
